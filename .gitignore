@@ -1,3 +1,6 @@
 vendor/
 tmp/
 .vscode
+*.log
+__pycache__/
+*.exe
