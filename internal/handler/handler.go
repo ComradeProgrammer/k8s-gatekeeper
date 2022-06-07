@@ -35,6 +35,12 @@ func Handler(c *gin.Context) {
 	switch resource {
 	case "deployments":
 		model.MountDeploymentObject(&admissionReview)
+	case "pods":
+		model.MountPodObject(&admissionReview)
+	case "services":
+		model.MountServiceObject(&admissionReview)
+	case "ingresses":
+		model.MountIngressObject(&admissionReview)
 	}
 
 	err := model.EnforcerList.Enforce(&admissionReview)
