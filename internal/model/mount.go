@@ -5,13 +5,14 @@ import (
 
 	admission "k8s.io/api/admission/v1"
 	app "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 )
 
 func MountDeploymentObject(admissionReview *admission.AdmissionReview) error {
 	admissionReview.Request.Object.Object = nil
 	if len(admissionReview.Request.Object.Raw) != 0 {
-		var deploymentObject app.Service
+		var deploymentObject app.Deployment
 		err := json.Unmarshal(admissionReview.Request.Object.Raw, &deploymentObject)
 		if err != nil {
 			return err
@@ -21,7 +22,7 @@ func MountDeploymentObject(admissionReview *admission.AdmissionReview) error {
 
 	admissionReview.Request.OldObject.Object = nil
 	if len(admissionReview.Request.OldObject.Raw) != 0 {
-		var deploymentOldObject app.Service
+		var deploymentOldObject app.Deployment
 		err := json.Unmarshal(admissionReview.Request.OldObject.Raw, &deploymentOldObject)
 		if err != nil {
 			return err
@@ -34,7 +35,7 @@ func MountDeploymentObject(admissionReview *admission.AdmissionReview) error {
 func MountPodObject(admissionReview *admission.AdmissionReview) error {
 	admissionReview.Request.Object.Object = nil
 	if len(admissionReview.Request.Object.Raw) != 0 {
-		var podObject app.Service
+		var podObject core.Pod
 		err := json.Unmarshal(admissionReview.Request.Object.Raw, &podObject)
 		if err != nil {
 			return err
@@ -44,7 +45,7 @@ func MountPodObject(admissionReview *admission.AdmissionReview) error {
 
 	admissionReview.Request.OldObject.Object = nil
 	if len(admissionReview.Request.OldObject.Raw) != 0 {
-		var podOldObject app.Service
+		var podOldObject core.Pod
 		err := json.Unmarshal(admissionReview.Request.OldObject.Raw, &podOldObject)
 		if err != nil {
 			return err
@@ -57,7 +58,7 @@ func MountPodObject(admissionReview *admission.AdmissionReview) error {
 func MountServiceObject(admissionReview *admission.AdmissionReview) error {
 	admissionReview.Request.Object.Object = nil
 	if len(admissionReview.Request.Object.Raw) != 0 {
-		var serviceObject app.Service
+		var serviceObject core.Service
 		err := json.Unmarshal(admissionReview.Request.Object.Raw, &serviceObject)
 		if err != nil {
 			return err
@@ -67,7 +68,7 @@ func MountServiceObject(admissionReview *admission.AdmissionReview) error {
 
 	admissionReview.Request.OldObject.Object = nil
 	if len(admissionReview.Request.OldObject.Raw) != 0 {
-		var serviceOldObject app.Service
+		var serviceOldObject core.Service
 		err := json.Unmarshal(admissionReview.Request.OldObject.Raw, &serviceOldObject)
 		if err != nil {
 			return err
@@ -99,4 +100,3 @@ func MountIngressObject(admissionReview *admission.AdmissionReview) error {
 	}
 	return nil
 }
-

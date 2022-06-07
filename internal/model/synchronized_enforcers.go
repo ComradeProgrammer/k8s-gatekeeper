@@ -51,7 +51,7 @@ func NewSynchronizedEnforcerList() *SynchronizedEnforcerList {
 	//start auto sync for loaders
 	go func() {
 		for {
-			time.Sleep(5 * time.Second)
+			time.Sleep(10 * time.Second)
 			res.loadEnforcer()
 		}
 	}()
@@ -92,6 +92,7 @@ func (s *SynchronizedEnforcerList) loadEnforcer() {
 		}
 		//todo: setup function lists
 		e.AddFunction("access", casbinhelper.Access)
+		e.AddFunction("string", casbinhelper.ToString)
 		s.Enforcers = append(s.Enforcers, &EnforcerWrapper{Enforcer: e, ModelName: tmp.Name})
 	}
 	log.Printf("%d enforcers loaded", len(s.Enforcers))
