@@ -16,5 +16,5 @@ spec:
 
     [matchers]
     m = r.obj.Request.Namespace == "default" && r.obj.Request.Resource.Resource =="services" && \
-    r.obj.Request.Operation == "DELETE" &&\
+    r.obj.Request.Operation != "DELETE" &&\
     string(r.obj.Request.Object.Object.Spec.Type)  == p.obj

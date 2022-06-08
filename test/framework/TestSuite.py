@@ -21,23 +21,23 @@ class TestSuite:
         set up external webhook server. Logs of output will be put into ../testlog
         '''
         #print("[E2E Test]:%s: setting up webhook server and log"%(self.name))
-
-        #load model and policy 
-        os.system("kubectl apply -f %s/example/%s/model.yaml"%(self.workspacePath,self.testName))
-        os.system("kubectl apply -f %s/example/%s/policy.yaml"%(self.workspacePath,self.testName))
-
-        #setup webhook 
-        os.system("kubectl apply -f %s/config/webhook_external.yaml"%(self.workspacePath))
-
         
         #setup log file
         logFileName = self.testName+"-"+time.strftime("%Y-%m-%d-%H-%M-%S")+".log"
         self.logFileHandler = open(
             "%s/test/log/%s" % (self.workspacePath, logFileName), "w")
+        
+
+        #load model and policy 
+        subprocess.Popen("kubectl apply -f %s/example/%s/model.yaml"%(self.workspacePath,self.testName),shell=True,stdout=self.logFileHandler, stderr=self.logFileHandler).wait()
+        subprocess.Popen("kubectl apply -f %s/example/%s/policy.yaml"%(self.workspacePath,self.testName),shell=True,stdout=self.logFileHandler, stderr=self.logFileHandler).wait()
+        #setup webhook 
+        subprocess.Popen("kubectl apply -f %s/config/webhook_external.yaml"%(self.workspacePath),shell=True,stdout=self.logFileHandler, stderr=self.logFileHandler).wait()
+
+        #start the webhook
         cmd = [
             "%s/test/build/main.exe" % (self.workspacePath),
         ]
-        #start the webhook
         self.webhookProcess = subprocess.Popen(
             cmd, cwd=self.workspacePath, stdout=self.logFileHandler, stderr=self.logFileHandler)
         #print("[E2E Test]:%s: admission webhook started, pid %d"%(self.name,self.webhookProcess.pid))
@@ -51,9 +51,9 @@ class TestSuite:
         self.logFileHandler.close()
 
         #remove webhook 
-        os.system("kubectl delete -f %s/config/webhook_external.yaml"%(self.workspacePath))
-        os.system("kubectl delete -f %s/example/%s/model.yaml"%(self.workspacePath,self.testName))
-        os.system("kubectl delete -f %s/example/%s/policy.yaml"%(self.workspacePath,self.testName))
+        os.system("kubectl delete -f %s/config/webhook_external.yaml 1> /dev/null 2>/dev/null"%(self.workspacePath))
+        os.system("kubectl delete -f %s/example/%s/model.yaml 1> /dev/null 2>/dev/null"%(self.workspacePath,self.testName))
+        os.system("kubectl delete -f %s/example/%s/policy.yaml 1> /dev/null 2>/dev/null"%(self.workspacePath,self.testName))
         #remove model and policy 
 
     def test(self) -> Tuple[int, int]:
@@ -65,7 +65,6 @@ class TestSuite:
         '''
         success = 0
         fail = 0
-        time.sleep(1)
         testCaseFiles=os.listdir("%s/example/%s/testcase"%(self.workspacePath,self.testName))
         for i in range(0, len(testCaseFiles)):
             yamlFileName = testCaseFiles[i]
@@ -107,6 +106,7 @@ class TestSuite:
                 print("[E2E Test]:FAILED Test suit %s, Test case %s" %
                       (self.testName, os.path.basename(yamlFileName)))
                 fail += 1
+
         return (success, fail)
 
     def run(self) -> Tuple[int, int]:

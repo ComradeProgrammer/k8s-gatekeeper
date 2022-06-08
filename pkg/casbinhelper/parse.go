@@ -22,12 +22,23 @@ func ParseFloat(args ...interface{}) (interface{}, error) {
 	if len(args) != 1 {
 		return nil, fmt.Errorf("ParseFloat requires 1 parameters, currently %d", len(args))
 	}
+
 	numString, ok := args[0].(string)
-	if !ok {
-		return nil, fmt.Errorf("ParseFloat requires 1st parameter to be string")
+	if ok {
+		num, err := strconv.ParseFloat(numString, 64)
+		return num, err
 	}
-	num, err := strconv.ParseFloat(numString, 64)
-	return num, err
+	numInt64, ok := args[0].(int64)
+	if ok {
+		return float64(numInt64), nil
+	}
+	numInt, ok := args[0].(int)
+	if ok {
+		return float64(numInt), nil
+	}
+
+	return nil, fmt.Errorf("ParseFloat requires 1st parameter to be string or int")
+
 }
 
 func ParseInt(args ...interface{}) (interface{}, error) {

@@ -19,31 +19,86 @@ import (
 )
 
 func Access(args ...interface{}) (interface{}, error) {
-	vCurrent := reflect.ValueOf(args[0])
-	for _, field := range args {
 
+	vCurrent := reflect.ValueOf(args[0])
+	for pos, field := range args {
+		if pos == 0 {
+			continue
+		}
 		if vCurrent.Kind() == reflect.Pointer {
 			vCurrent = vCurrent.Elem()
 		}
 
-		//index?
-		if indexFloat, ok := field.(float64); ok {
-			index := int(indexFloat)
-			if vCurrent.Kind() != reflect.Array && vCurrent.Kind() != reflect.Slice {
-				return nil, fmt.Errorf("appling numeric accessor to non-array")
+		if vCurrent.Kind() == reflect.Array || vCurrent.Kind() == reflect.Slice {
+			indexFloat, ok := field.(float64)
+			if !ok {
+				return nil, fmt.Errorf("index for a slice should be a integer")
 			}
+			index := int(indexFloat)
 			vCurrent = vCurrent.Index(index)
 			continue
 		}
-		if attr, ok := field.(string); ok {
-			if vCurrent.Kind() != reflect.Struct {
-				return nil, fmt.Errorf("appling string accessor to non-struct")
+		if vCurrent.Kind() == reflect.Struct {
+			attr, ok := field.(string)
+			if !ok {
+				return nil, fmt.Errorf("string field/method should be applied to a struct")
 			}
-			vCurrent = vCurrent.FieldByName(attr)
-			if vCurrent.IsZero() {
-				return nil, fmt.Errorf("no attribut %s found", attr)
+			//check whether it is a field
+			newValueObj := vCurrent.FieldByName(attr)
+			if !reflect.ValueOf(newValueObj).IsZero() {
+				// is a field
+				vCurrent = newValueObj
+				continue
 			}
+			method := vCurrent.MethodByName(attr)
+			if !reflect.ValueOf(method).IsZero() {
+				// is a method
+				if method.Type().NumIn() != 0 || method.Type().NumOut() != 1 {
+					return nil, fmt.Errorf("access only support method with no parameters and 1 return value")
+				}
+				returnValue := method.Call([]reflect.Value{})
+				vCurrent = returnValue[0]
+				continue
+			}
+
+			//maybe a method that requires a pointer receiver?
+
+			if vCurrent.CanAddr() {
+				method = vCurrent.Addr().MethodByName(attr)
+				if !reflect.ValueOf(method).IsZero() {
+					// is a method
+					if method.Type().NumIn() != 0 || method.Type().NumOut() != 1 {
+						return nil, fmt.Errorf("access only support method with no parameters and 1 return value")
+					}
+					returnValue := method.Call([]reflect.Value{})
+					vCurrent = returnValue[0]
+					continue
+				}
+			}
+			//maybe new a new object?
+
+			return nil, fmt.Errorf("no attribute/method %s found", attr)
 		}
+
+		if vCurrent.Kind() == reflect.Map {
+			vField := reflect.ValueOf(field)
+			if !vField.CanConvert(vCurrent.Type().Key()){
+				return nil, fmt.Errorf("key %v cannot be converted to %s", field,vCurrent.Type().Key().String())
+			}
+			
+			vValue := vCurrent.MapIndex(vField.Convert(vCurrent.Type().Key()))
+			if reflect.ValueOf(vValue).IsZero() {
+				return nil, fmt.Errorf("key %v not found", field)
+			}
+			vNewObjPtr := reflect.New(vValue.Type())
+			vNewObjPtr.Elem().Set(vValue)
+			vCurrent = vNewObjPtr.Elem()
+
+			continue
+		}
+
+		return nil, fmt.Errorf("unable to process %s", vCurrent.Type().String())
+
 	}
 	return vCurrent.Interface(), nil
 

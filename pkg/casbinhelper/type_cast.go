@@ -6,6 +6,7 @@ import (
 )
 
 func ToString(args ...interface{}) (interface{}, error) {
+	fmt.Println("here",args)
 	if len(args) != 1 {
 		return nil, fmt.Errorf("ToString requires 1 parameters, currently %d", len(args))
 	}
