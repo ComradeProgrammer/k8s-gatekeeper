@@ -49,17 +49,29 @@ p,2,deny
 		model := model.NewModel()
 		model.LoadModelFromText(modelTxt)
 		adaptor := sadaptor.NewAdapter(policyTxt)
-		e, err := casbin.NewEnforcer(model, adaptor)
+		enforcer1, err := casbin.NewEnforcer(model, adaptor)
 		So(err, ShouldBeNil)
-		e.AddFunction("access", Access)
+		enforcer1.AddFunction("access", Access)
 
-		ok1, err1 := e.Enforce(&obj1)
+		ok1, err1 := enforcer1.Enforce(&obj1)
 		So(err1, ShouldBeNil)
 		So(ok1, ShouldBeTrue)
 
-		ok2, err2 := e.Enforce(&obj2)
+		ok2, err2 := enforcer1.Enforce(&obj2)
 		So(err2, ShouldBeNil)
 		So(ok2, ShouldBeFalse)
+
+		enforcer2, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer2.AddFunction("access", AccessWithWildCard)
+		ok3, err3 := enforcer2.Enforce(&obj1)
+		So(err3, ShouldBeNil)
+		So(ok3, ShouldBeTrue)
+
+		ok4, err4 := enforcer2.Enforce(&obj2)
+		So(err4, ShouldBeNil)
+		So(ok4, ShouldBeFalse)
+
 	})
 
 }
@@ -114,6 +126,17 @@ p,2,deny
 		ok2, err2 := e.Enforce(&obj2)
 		So(err2, ShouldBeNil)
 		So(ok2, ShouldBeFalse)
+
+		enforcer2, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer2.AddFunction("access", AccessWithWildCard)
+		ok3, err3 := enforcer2.Enforce(&obj1)
+		So(err3, ShouldBeNil)
+		So(ok3, ShouldBeTrue)
+
+		ok4, err4 := enforcer2.Enforce(&obj2)
+		So(err4, ShouldBeNil)
+		So(ok4, ShouldBeFalse)
 	})
 
 }
@@ -177,6 +200,17 @@ p,2,deny
 		ok2, err2 := e.Enforce(&obj2)
 		So(err2, ShouldBeNil)
 		So(ok2, ShouldBeFalse)
+
+		enforcer2, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer2.AddFunction("access", AccessWithWildCard)
+		ok3, err3 := enforcer2.Enforce(&obj1)
+		So(err3, ShouldBeNil)
+		So(ok3, ShouldBeTrue)
+
+		ok4, err4 := enforcer2.Enforce(&obj2)
+		So(err4, ShouldBeNil)
+		So(ok4, ShouldBeFalse)
 	})
 	Convey("TestAccessorNestedCall2", t, func() {
 		modelTxt := `
@@ -211,6 +245,17 @@ p,2,deny
 		ok2, err2 := e.Enforce(&obj2)
 		So(err2, ShouldBeNil)
 		So(ok2, ShouldBeFalse)
+
+		enforcer2, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer2.AddFunction("access", AccessWithWildCard)
+		ok3, err3 := enforcer2.Enforce(&obj1)
+		So(err3, ShouldBeNil)
+		So(ok3, ShouldBeTrue)
+
+		ok4, err4 := enforcer2.Enforce(&obj2)
+		So(err4, ShouldBeNil)
+		So(ok4, ShouldBeFalse)
 	})
 
 	Convey("TestAccessorNestedCall3", t, func() {
@@ -256,6 +301,15 @@ p,2,deny
 
 		_, err2 := e.Enforce(&obj2)
 		So(err2, ShouldNotBeNil)
+
+		enforcer2, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer2.AddFunction("access", AccessWithWildCard)
+		_, err3 := enforcer2.Enforce(&obj1)
+		So(err3, ShouldNotBeNil)
+
+		_, err4 := enforcer2.Enforce(&obj2)
+		So(err4, ShouldNotBeNil)
 
 	})
 
@@ -321,6 +375,17 @@ p,2,deny
 		ok2, err2 := e.Enforce(&obj2)
 		So(err2, ShouldBeNil)
 		So(ok2, ShouldBeFalse)
+
+		enforcer2, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer2.AddFunction("access", AccessWithWildCard)
+		ok3, err3 := enforcer2.Enforce(&obj1)
+		So(err3, ShouldBeNil)
+		So(ok3, ShouldBeTrue)
+
+		ok4, err4 := enforcer2.Enforce(&obj2)
+		So(err4, ShouldBeNil)
+		So(ok4, ShouldBeFalse)
 	})
 	Convey("TestAccessorNestedStruct2", t, func() {
 
@@ -354,6 +419,126 @@ p,2,deny
 
 		_, err2 := e.Enforce(&obj2)
 		So(err2, ShouldNotBeNil)
+
+		enforcer2, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer2.AddFunction("access", AccessWithWildCard)
+		_, err3 := enforcer2.Enforce(&obj1)
+		So(err3, ShouldNotBeNil)
+
+		_, err4 := enforcer2.Enforce(&obj2)
+		So(err4, ShouldNotBeNil)
+
 	})
 
+}
+
+func TestWildcardAccessor(t *testing.T) {
+	type Class2 struct {
+		Name string
+	}
+	type Class1 struct {
+		Inner []Class2
+	}
+	type Class0 struct {
+		Inner []Class1
+	}
+	obj1 := Class1{
+		Inner: []Class2{
+			{Name: "1"},
+			{Name: "3"},
+		},
+	}
+	obj2 := Class1{
+		Inner: []Class2{
+			{Name: "2"},
+			{Name: "4"},
+		},
+	}
+	obj3 := Class1{
+		Inner: []Class2{
+			{Name: "2"},
+			{Name: "4"},
+		},
+	}
+	obj4 := Class0{
+		Inner: []Class1{obj1, obj3},
+	}
+	obj5 := Class0{
+		Inner: []Class1{obj3, obj2},
+	}
+
+	Convey("TestAccessorNestedStruct2", t, func() {
+
+		modelTxt := `
+[request_definition]
+r = obj
+	
+[policy_definition]
+p = obj,eft
+	
+[policy_effect]
+e =some(where (p.eft == allow))
+	
+[matchers]
+m = contain(access(r.obj,"Inner","*","Inner","*","Name"),p.obj)
+`
+
+		policyTxt := `
+p,1,allow
+p,2,deny
+`
+		model := model.NewModel()
+		model.LoadModelFromText(modelTxt)
+		adaptor := sadaptor.NewAdapter(policyTxt)
+
+		enforcer, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer.AddFunction("access", AccessWithWildCard)
+		enforcer.AddFunction("contain", Contain)
+		ok1, err1 := enforcer.Enforce(&obj4)
+		So(err1, ShouldBeNil)
+		So(ok1, ShouldBeTrue)
+
+		ok2, err2 := enforcer.Enforce(&obj5)
+		So(err2, ShouldBeNil)
+		So(ok2, ShouldBeFalse)
+	})
+
+	Convey("TestAccessorNestedStruct", t, func() {
+
+		modelTxt := `
+[request_definition]
+r = obj
+	
+[policy_definition]
+p = obj,eft
+	
+[policy_effect]
+e =some(where (p.eft == allow))
+	
+[matchers]
+m = contain(access(r.obj,"Inner","*","Name"),p.obj)
+`
+
+		policyTxt := `
+p,1,allow
+p,2,deny
+`
+		model := model.NewModel()
+		model.LoadModelFromText(modelTxt)
+		adaptor := sadaptor.NewAdapter(policyTxt)
+
+		enforcer, err := casbin.NewEnforcer(model, adaptor)
+		So(err, ShouldBeNil)
+		enforcer.AddFunction("access", AccessWithWildCard)
+		enforcer.AddFunction("contain", Contain)
+		ok1, err1 := enforcer.Enforce(&obj1)
+		So(err1, ShouldBeNil)
+		So(ok1, ShouldBeTrue)
+
+		ok2, err2 := enforcer.Enforce(&obj2)
+		So(err2, ShouldBeNil)
+		So(ok2, ShouldBeFalse)
+	})
 }

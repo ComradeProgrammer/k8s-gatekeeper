@@ -92,8 +92,11 @@ func (s *SynchronizedEnforcerList) loadEnforcer() {
 		}
 		//todo: setup function lists
 		e.AddFunction("access", casbinhelper.Access)
+		e.AddFunction("accessWithWildcard", casbinhelper.AccessWithWildCard)
 		e.AddFunction("string", casbinhelper.ToString)
 		e.AddFunction("parseFloat", casbinhelper.ParseFloat)
+		e.AddFunction("contain", casbinhelper.Contain)
+		e.AddFunction("split", casbinhelper.Split)
 		s.Enforcers = append(s.Enforcers, &EnforcerWrapper{Enforcer: e, ModelName: tmp.Name})
 	}
 	log.Printf("%d enforcers loaded", len(s.Enforcers))
