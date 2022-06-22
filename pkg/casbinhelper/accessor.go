@@ -100,6 +100,10 @@ func Access(args ...interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("unable to process %s", vCurrent.Type().String())
 
 	}
+	if vCurrent.Kind() == reflect.Pointer {
+		vCurrent = vCurrent.Elem()
+	}
+
 	return vCurrent.Interface(), nil
 
 }
@@ -212,7 +216,7 @@ func Contain(args ...interface{}) (interface{}, error) {
 	if len(args) == 0 {
 		return nil, fmt.Errorf("Contain requires more than 1 parameters, currently %d", len(args))
 	}
-	array:=args[0:len(args)-1]
+	array := args[0 : len(args)-1]
 
 	target := args[len(args)-1]
 	for _, obj := range array {

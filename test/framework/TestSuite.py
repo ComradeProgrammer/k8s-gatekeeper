@@ -67,6 +67,7 @@ class TestSuite:
         fail = 0
         testCaseFiles=os.listdir("%s/example/%s/testcase"%(self.workspacePath,self.testName))
         for i in range(0, len(testCaseFiles)):
+            time.sleep(0.5)
             yamlFileName = testCaseFiles[i]
             yamlFileAbsoluteName="%s/example/%s/testcase/%s"%(self.workspacePath,self.testName,yamlFileName)
             shouldSuccess = yamlFileName.startswith("approve")

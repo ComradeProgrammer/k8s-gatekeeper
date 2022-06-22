@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"fmt"
 	"io/ioutil"
+	"log"
 
 	admission "k8s.io/api/admission/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -20,13 +20,16 @@ func Handler(c *gin.Context) {
 	var decoder runtime.Decoder = serializer.NewCodecFactory(runtime.NewScheme()).UniversalDeserializer()
 	decoder.Decode(data, nil, &admissionReview)
 
+	if admissionReview.Request.Resource.Resource == "casbinmodels" || admissionReview.Request.Resource.Resource == "casbinpolicies" {
+		approveResponse(c, string(admissionReview.Request.UID))
+		return
+	}
+
 	//for debug only. Todo:remove this block of code
 	if admissionReview.Request.Namespace != "default" {
 		approveResponse(c, string(admissionReview.Request.UID))
 		return
 	}
-	//fmt.Println(string(data))
-	fmt.Printf("%s\n", admissionReview.Request.Resource.String())
 
 	//currently we are going to handle these resources:
 	uid := admissionReview.Request.UID
@@ -45,12 +48,12 @@ func Handler(c *gin.Context) {
 
 	err := model.EnforcerList.Enforce(&admissionReview)
 	if err != nil {
-		fmt.Println("rejected")
+		log.Printf("%s  rejected\n", admissionReview.Request.Resource.String())
 		rejectResponse(c, string(uid), err.Error())
 		return
 	}
 
-	fmt.Println("approved")
+	log.Printf("%s  approved\n", admissionReview.Request.Resource.String())
 	approveResponse(c, string(uid))
 
 }
