@@ -32,6 +32,10 @@ func ParseFloat(args ...interface{}) (interface{}, error) {
 	if ok {
 		return float64(numInt64), nil
 	}
+	numInt32, ok := args[0].(int32)
+	if ok {
+		return float64(numInt32), nil
+	}
 	numInt, ok := args[0].(int)
 	if ok {
 		return float64(numInt), nil

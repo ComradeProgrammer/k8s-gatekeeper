@@ -34,17 +34,9 @@ minikube delete
 #minikube start
 minikube start --image-mirror-country='cn'
 
-# 3.build webhook as external service
-echo "[E2E PreTest] build admission webhook"
-cd $workspaceBaseDir
-go mod tidy
-go mod vendor
-go build -o "${workspaceBaseDir}/test/build/main.exe" cmd/webhook/main.go
 
-echo "[E2E PreTest] load Model and Policy CRD to k8s"
-cd "${workspaceBaseDir}"
-kubectl apply -f config/auth.casbin.org_casbinmodels.yaml
-kubectl apply -f config/auth.casbin.org_casbinpolicies.yaml
+
+
 
 
 

@@ -41,6 +41,7 @@ class TestSuite:
         self.webhookProcess = subprocess.Popen(
             cmd, cwd=self.workspacePath, stdout=self.logFileHandler, stderr=self.logFileHandler)
         #print("[E2E Test]:%s: admission webhook started, pid %d"%(self.name,self.webhookProcess.pid))
+        time.sleep(0.2)
 
     def tearDown(self) -> None:
         '''
@@ -67,7 +68,7 @@ class TestSuite:
         fail = 0
         testCaseFiles=os.listdir("%s/example/%s/testcase"%(self.workspacePath,self.testName))
         for i in range(0, len(testCaseFiles)):
-            time.sleep(0.5)
+            time.sleep(0.2)
             yamlFileName = testCaseFiles[i]
             yamlFileAbsoluteName="%s/example/%s/testcase/%s"%(self.workspacePath,self.testName,yamlFileName)
             shouldSuccess = yamlFileName.startswith("approve")
