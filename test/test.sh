@@ -18,6 +18,7 @@ kubectl apply -f config/auth.casbin.org_casbinmodels.yaml
 kubectl apply -f config/auth.casbin.org_casbinpolicies.yaml
 
 echo "[E2E Test] test Start"
-cd ${pretestBaseDir}
-python3 main.py
+cd $workspaceBaseDir
+mkdir -p test/log
+python3 test/main.py
 
