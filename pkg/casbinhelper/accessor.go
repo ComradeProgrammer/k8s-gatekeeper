@@ -100,7 +100,7 @@ func Access(args ...interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("unable to process %s", vCurrent.Type().String())
 
 	}
-	if vCurrent.Kind() == reflect.Pointer {
+	if vCurrent.Kind() == reflect.Pointer && !vCurrent.IsNil(){
 		vCurrent = vCurrent.Elem()
 	}
 

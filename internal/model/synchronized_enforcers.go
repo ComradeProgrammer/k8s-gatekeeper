@@ -99,6 +99,7 @@ func (s *SynchronizedEnforcerList) loadEnforcer() {
 		e.AddFunction("split", casbinhelper.Split)
 		e.AddFunction("len",casbinhelper.Len)
 		e.AddFunction("matchRegex",casbinhelper.MatchRegex)
+		e.AddFunction("isNil",casbinhelper.IsNil)
 		s.Enforcers = append(s.Enforcers, &EnforcerWrapper{Enforcer: e, ModelName: tmp.Name})
 	}
 	log.Printf("%d enforcers loaded", len(s.Enforcers))
