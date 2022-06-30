@@ -24,21 +24,13 @@ type SynchronizedEnforcerList struct {
 
 var EnforcerList *SynchronizedEnforcerList
 
-func init() {
+func Init() {
 	EnforcerList = NewSynchronizedEnforcerList()
-	//test code
-	// e, err := casbin.NewEnforcer("example/model.conf", "example/policy.csv")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// e.AddFunction("access", casbinhelper.Access)
-	// EnforcerList.Enforcers = append(EnforcerList.Enforcers, &EnforcerWrapper{Enforcer: e, ModelName: "aaa"})
-
 }
 
 func NewSynchronizedEnforcerList() *SynchronizedEnforcerList {
 	//todo: switch to dynamic configuration
-	loader, err := NewModelLoader("default", true)
+	loader, err := NewModelLoader("default", IsExternalClient)
 	if err != nil {
 		panic(err)
 	}
@@ -97,9 +89,9 @@ func (s *SynchronizedEnforcerList) loadEnforcer() {
 		e.AddFunction("parseFloat", casbinhelper.ParseFloat)
 		e.AddFunction("contain", casbinhelper.Contain)
 		e.AddFunction("split", casbinhelper.Split)
-		e.AddFunction("len",casbinhelper.Len)
-		e.AddFunction("matchRegex",casbinhelper.MatchRegex)
-		e.AddFunction("isNil",casbinhelper.IsNil)
+		e.AddFunction("len", casbinhelper.Len)
+		e.AddFunction("matchRegex", casbinhelper.MatchRegex)
+		e.AddFunction("isNil", casbinhelper.IsNil)
 		s.Enforcers = append(s.Enforcers, &EnforcerWrapper{Enforcer: e, ModelName: tmp.Name})
 	}
 	log.Printf("%d enforcers loaded", len(s.Enforcers))
